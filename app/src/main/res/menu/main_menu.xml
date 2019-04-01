@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/menu_settings"
+        android:orderInCategory="70"
+        android:title="@string/menu_settings"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/menu_sort"
+        android:orderInCategory="30"
+        android:title="@string/menu_sort"
+        app:showAsAction="never">
+        <menu>
+            <item
+                android:id="@+id/menu_sort_name_inc"
+                android:orderInCategory="10"
+                android:title="@string/menu_sort_name_inc"
+                app:showAsAction="never" />
+            <item
+                android:id="@+id/menu_sort_name_dec"
+                android:orderInCategory="20"
+                android:title="@string/menu_sort_name_dec"
+                app:showAsAction="never" />
+            <item
+                android:id="@+id/menu_sort_data_inc"
+                android:orderInCategory="30"
+                android:title="@string/menu_sort_date_inc"
+                app:showAsAction="never" />
+            <item
+                android:id="@+id/menu_sort_data_dec"
+                android:orderInCategory="40"
+                android:title="@string/menu_sort_date_dec"
+                app:showAsAction="never" />
+            <item
+                android:id="@+id/menu_sort_sum_inc"
+                android:orderInCategory="50"
+                android:title="@string/menu_sort_sum_inc"
+                app:showAsAction="never" />
+            <item
+                android:id="@+id/menu_sort_sum_dec"
+                android:orderInCategory="60"
+                android:title="@string/menu_sort_sum_dec"
+                app:showAsAction="never" />
+        </menu>
+    </item>
+    <item
+        android:id="@+id/menu_search"
+        android:orderInCategory="10"
+        android:title="@string/menu_search"
+        android:icon="@android:drawable/ic_menu_search"
+        app:actionViewClass="android.widget.SearchView"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/menu_change"
+        android:orderInCategory="20"
+        android:title="@string/menu_change"
+        app:showAsAction="never" />
+</menu>

@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">Car Costs</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Current User</string>
+    <string name="nav_header_subtitle">usermail@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="menu_settings">Настройки</string>
+    <string name="menu_search">Поиск</string>
+    <string name="menu_change">Изменить</string>
+    <string name="menu_sort">Сортировать</string>
+    <string name="menu_sort_name_inc">По имени возр.</string>
+    <string name="menu_sort_name_dec">По имени уб.</string>
+    <string name="menu_sort_date_inc">По дате возр.</string>
+    <string name="menu_sort_date_dec">По дате уб.</string>
+    <string name="menu_sort_sum_inc">По сумме возр.</string>
+    <string name="menu_sort_sum_dec">По сумме уб.</string>
+    <string name="textView_welcome">Мое приложение</string>
+    <string name="menu_add">Добавить</string>
+    <string name="menu_popup_add1">Добавить элемент типа 1</string>
+    <string name="menu_popup_add2">Добавить элемент типа 2</string>
+    <string name="toast_settings_description">Настройки</string>
+    <string name="nav_menu_profile">Мой профиль</string>
+    <string name="nav_menu_about">О программе</string>
+    <string name="nav_menu_contacts">Контакты</string>
+</resources>
