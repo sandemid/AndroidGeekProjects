@@ -23,4 +23,7 @@
     <string name="nav_menu_profile">Мой профиль</string>
     <string name="nav_menu_about">О программе</string>
     <string name="nav_menu_contacts">Контакты</string>
+    <string name="communicate">Communicate</string>
+    <string name="share">Share</string>
+    <string name="send">Send</string>
 </resources>

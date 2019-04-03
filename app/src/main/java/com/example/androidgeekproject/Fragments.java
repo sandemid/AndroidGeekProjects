@@ -1,4 +1,4 @@
-package com.example.carcosts;
+package com.example.androidgeekproject;
 
 import android.support.v4.app.Fragment;
 
