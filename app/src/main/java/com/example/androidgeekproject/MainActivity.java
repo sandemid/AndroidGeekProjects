@@ -1,5 +1,9 @@
 package com.example.androidgeekproject;
 
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -20,6 +24,32 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     Fragments currentFragment = new Fragments();
+    private SensorManager sensorManager;
+    private Sensor sensorTemperature;
+    private Sensor sensorHumidity;
+    private SensorEventListener listenerTemp = new SensorEventListener() {
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            NavMyProfileFragment.setCurrentTemperature(Float.toString(event.values[0]));
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+        }
+    };
+
+    private SensorEventListener listenerHum = new SensorEventListener() {
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            NavMyProfileFragment.setCurrentHumidity(Float.toString(event.values[0]));
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +58,23 @@ public class MainActivity extends AppCompatActivity
         initActionBar();
         initNavView();
 
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        sensorTemperature = sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE);
+        sensorHumidity = sensorManager.getDefaultSensor(Sensor.TYPE_RELATIVE_HUMIDITY);
+        sensorManager.registerListener(listenerTemp, sensorTemperature,
+                SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(listenerHum, sensorHumidity,
+                SensorManager.SENSOR_DELAY_NORMAL);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
     }
 
     private void initNavView() {

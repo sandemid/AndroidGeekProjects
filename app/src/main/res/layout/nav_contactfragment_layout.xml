@@ -5,4 +5,10 @@
     android:layout_height="match_parent"
     android:background="@color/colorPrimaryDark">
 
+    <com.example.androidgeekproject.CompoundView
+        android:id="@+id/compoundView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    </com.example.androidgeekproject.CompoundView>
+
 </android.support.constraint.ConstraintLayout>

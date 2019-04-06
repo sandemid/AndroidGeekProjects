@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <EditText
+        android:id="@+id/telephoneInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="12dp"
+        android:layout_toStartOf="@id/callBtn"
+        android:inputType="phone" />
+
+    <Button
+        android:id="@+id/callBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="12dp"
+        android:layout_alignParentEnd="true"
+        android:text="@string/call"/>
+
+    <EditText
+        android:id="@+id/smsInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="text"
+        android:layout_below="@id/telephoneInput"
+        android:layout_toStartOf="@+id/sendSms"
+        android:layout_marginEnd="12dp"
+        android:layout_marginTop="8dp"/>
+
+    <Button
+        android:id="@+id/sendSms"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@id/callBtn"
+        android:layout_below="@id/callBtn"
+        android:text="@string/send_sms"/>
+
+</RelativeLayout>
