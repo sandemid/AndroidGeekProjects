@@ -70,11 +70,17 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onPause() {
         super.onPause();
+        sensorManager.unregisterListener(listenerTemp, sensorTemperature);
+        sensorManager.unregisterListener(listenerHum, sensorHumidity);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        sensorManager.registerListener(listenerTemp, sensorTemperature,
+                SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(listenerHum, sensorHumidity,
+                SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     private void initNavView() {
