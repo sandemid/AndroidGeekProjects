@@ -1,4 +1,4 @@
-package com.example.androidgeekproject;
+package com.example.androidgeekproject.fragments;
 
 import android.graphics.Color;
 import android.os.Bundle;
@@ -10,6 +10,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.example.androidgeekproject.views.CustomBtnCircleView;
+import com.example.androidgeekproject.views.CustomTextView;
+import com.example.androidgeekproject.R;
 
 public class NavMyProfileFragment extends Fragments {
 

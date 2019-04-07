@@ -1,4 +1,4 @@
-package com.example.androidgeekproject;
+package com.example.androidgeekproject.fragments;
 
 import android.support.v4.app.Fragment;
 

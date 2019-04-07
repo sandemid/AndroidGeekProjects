@@ -1,4 +1,4 @@
-package com.example.androidgeekproject;
+package com.example.androidgeekproject.views;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -6,6 +6,8 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.Log;
 import android.view.View;
+
+import com.example.androidgeekproject.R;
 
 public class CustomTextView extends View {
 

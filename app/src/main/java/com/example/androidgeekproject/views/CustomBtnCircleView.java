@@ -1,4 +1,4 @@
-package com.example.androidgeekproject;
+package com.example.androidgeekproject.views;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -12,6 +12,8 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
+
+import com.example.androidgeekproject.R;
 
 public class CustomBtnCircleView extends View  {
 
