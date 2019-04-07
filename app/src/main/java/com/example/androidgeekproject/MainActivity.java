@@ -1,5 +1,9 @@
 package com.example.androidgeekproject;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -24,11 +28,14 @@ import com.example.androidgeekproject.fragments.Fragments;
 import com.example.androidgeekproject.fragments.NavAboutFragment;
 import com.example.androidgeekproject.fragments.NavContactFragment;
 import com.example.androidgeekproject.fragments.NavMyProfileFragment;
+import com.example.androidgeekproject.fragments.NavURLFragment;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     Fragments currentFragment = new Fragments();
+    private boolean serviceRun = false;
+    private BroadcastReceiver broadcastReceiver;
     private SensorManager sensorManager;
     private Sensor sensorTemperature;
     private Sensor sensorHumidity;
@@ -62,7 +69,31 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         initActionBar();
         initNavView();
+        initSensors();
 
+        //мониторит создание интента на запуск сервиса из фрагмента NavAboutFragment
+        broadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (!serviceRun) {
+                    serviceRun = true;
+                    String text = intent.getStringExtra(NavAboutFragment.KEY_FROM_FRAGMENT);
+                    Toast.makeText(getApplicationContext(), text,
+                            Toast.LENGTH_SHORT).show();
+                    Intent intentService = new Intent(MainActivity.this, BackgroundService.class);
+                    startService(intentService);
+                } else {
+                    Toast.makeText(getApplicationContext(), "Service already run!",
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+        };
+
+        IntentFilter filter = new IntentFilter(NavAboutFragment.BROADCAST_ACTION);
+        this.registerReceiver(broadcastReceiver, filter);
+    }
+
+    private void initSensors() {
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         sensorTemperature = sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE);
         sensorHumidity = sensorManager.getDefaultSensor(Sensor.TYPE_RELATIVE_HUMIDITY);
@@ -86,6 +117,12 @@ public class MainActivity extends AppCompatActivity
                 SensorManager.SENSOR_DELAY_NORMAL);
         sensorManager.registerListener(listenerHum, sensorHumidity,
                 SensorManager.SENSOR_DELAY_NORMAL);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        this.unregisterReceiver(this.broadcastReceiver);
     }
 
     private void initNavView() {
@@ -253,6 +290,10 @@ public class MainActivity extends AppCompatActivity
             NavContactFragment navContactFragment = new NavContactFragment();
             transaction.replace(R.id.fragmentContainer, navContactFragment);
             currentFragment = navContactFragment;
+        } else if (id == R.id.nav_site){
+            NavURLFragment navURLFragment = new NavURLFragment();
+            transaction.replace(R.id.fragmentContainer, navURLFragment);
+            currentFragment = navURLFragment;
         } else if (id == R.id.nav_share) {
             transaction.remove(currentFragment);
         } else if (id == R.id.nav_send) {
