@@ -1,4 +1,4 @@
-package com.example.androidgeekproject;
+package com.example.androidgeekproject.views;
 
 import android.content.Context;
 import android.content.Intent;
@@ -8,6 +8,8 @@ import android.view.LayoutInflater;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
+
+import com.example.androidgeekproject.R;
 
 public class CompoundView extends RelativeLayout {
     EditText phoneInput, smsInput;

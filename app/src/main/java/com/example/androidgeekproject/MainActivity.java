@@ -20,6 +20,11 @@ import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.androidgeekproject.fragments.Fragments;
+import com.example.androidgeekproject.fragments.NavAboutFragment;
+import com.example.androidgeekproject.fragments.NavContactFragment;
+import com.example.androidgeekproject.fragments.NavMyProfileFragment;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
