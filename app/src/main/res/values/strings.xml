@@ -26,4 +26,11 @@
     <string name="communicate">Communicate</string>
     <string name="share">Share</string>
     <string name="send">Send</string>
+    <string name="call">Call</string>
+    <string name="send_sms">Send sms</string>
+    <string name="nav_menu_site">Сайт программы</string>
+    <string name="homepage">Homepage</string>
+    <string name="ok" translatable="false">OK</string>
+    <string name="button_start_service_name">Запуск service</string>
+    <string name="button_start_async_name">Запуск Async</string>
 </resources>
