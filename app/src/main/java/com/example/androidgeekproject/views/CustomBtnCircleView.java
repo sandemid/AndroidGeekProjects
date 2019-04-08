@@ -19,7 +19,7 @@ public class CustomBtnCircleView extends View  {
 
     private final static String TAG = "CustomBtnCircleView";
     private Paint paint;
-    private int radius = 100;
+    private int radius = 50;
     private int color = Color.BLACK;
 
     private boolean pressed = false;
@@ -72,10 +72,10 @@ public class CustomBtnCircleView extends View  {
         Log.d(TAG, "onDraw");
         super.onDraw(canvas);
         if(pressed) {
-            canvas.drawCircle(getWidth() / 2, 350, radius/10, paint);
+            canvas.drawCircle(getWidth() / 2, 250, radius/10, paint);
         }
         else {
-            canvas.drawCircle(getWidth() / 2, 350, radius, paint);
+            canvas.drawCircle(getWidth() / 2, 250, radius, paint);
         }
     }
 

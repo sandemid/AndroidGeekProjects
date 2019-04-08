@@ -27,7 +27,7 @@ public class CustomTextView extends View {
         paint = new Paint();
         paint.setAntiAlias(true);
         paint.setColor(color);
-        paint.setTextSize(70.0f);
+        paint.setTextSize(40.0f);
 
     }
 
@@ -42,12 +42,12 @@ public class CustomTextView extends View {
 
         if (!onClick) {
             paint.setColor(getResources().getColor(R.color.colorFirst));
-            canvas.drawText("", 200, 800, paint);
+            canvas.drawText("", 200, 400, paint);
             paint.setColor(color);
             onClick = true;
             return;
         }
 
-        canvas.drawText(text, 200, 800, paint);
+        canvas.drawText(text, 200, 400, paint);
     }
 }

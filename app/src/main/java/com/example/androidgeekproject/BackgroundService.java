@@ -29,7 +29,7 @@ public class BackgroundService extends Service {
     private SensorManager sensorManager;
     private Sensor sensorTemp;
     private Handler handler;
-    private MyWorkerThread mWorkerThread;
+//    private MyWorkerThread mWorkerThread;
     private SensorEventListener listenerTemp;
     private float curValue;
 
@@ -48,37 +48,64 @@ public class BackgroundService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId)  {
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         sensorTemp = sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE);
-        mWorkerThread = new MyWorkerThread("mWorkerThread");
+//        mWorkerThread = new MyWorkerThread("mWorkerThread");
         t = System.currentTimeMillis();
-        Thread task = new Thread(() -> {
-            listenerTemp = new SensorEventListener() {
-                @Override
-                public void onSensorChanged(SensorEvent event) {
-                    //проверяем, изменилось ли значение датчика
-                    if (curValue != event.values[0]) {
-                        t = System.currentTimeMillis();
-                        bol = true;
-                        curValue = event.values[0];
+        listenerTemp = new SensorEventListener() {
+            @Override
+            public void onSensorChanged(SensorEvent event) {
+                //проверяем, изменилось ли значение датчика
+                if (curValue != event.values[0]) {
+                    t = System.currentTimeMillis();
+                    bol = true;
+                    curValue = event.values[0];
                     //если изменений нет, то ждем 5 секунд и выводим уведомление 1 раз
-                    } else  {
-                        if (System.currentTimeMillis() - t >= 5000 && bol) {
-                            t = System.currentTimeMillis();
-                            bol = false;
-                            handler.post(() -> makeNote("Значение датчика t = " + Float.toString(curValue)));
-                        }
+                } else  {
+                    if (System.currentTimeMillis() - t >= 5000 && bol) {
+                        t = System.currentTimeMillis();
+                        bol = false;
+                        handler.post(() -> makeNote("Значение датчика t = " + Float.toString(curValue)));
                     }
                 }
-                @Override
-                public void onAccuracyChanged(Sensor sensor, int accuracy) {
+            }
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
-                }
-            };
-            sensorManager.registerListener(listenerTemp, sensorTemp,
-                    SensorManager.SENSOR_DELAY_NORMAL);
-        });
-        mWorkerThread.start();
-        mWorkerThread.prepareHandler();
-        mWorkerThread.postTask(task);
+            }
+        };
+        sensorManager.registerListener(listenerTemp, sensorTemp,
+                SensorManager.SENSOR_DELAY_NORMAL);
+
+
+        //Вариант использования многопоточности в сервисах. На АПИ 23 не сработал со слушателями. Оставлю для примера
+//          Thread task = new Thread(() -> {
+//            listenerTemp = new SensorEventListener() {
+//                @Override
+//                public void onSensorChanged(SensorEvent event) {
+//                    //проверяем, изменилось ли значение датчика
+//                    if (curValue != event.values[0]) {
+//                        t = System.currentTimeMillis();
+//                        bol = true;
+//                        curValue = event.values[0];
+//                    //если изменений нет, то ждем 5 секунд и выводим уведомление 1 раз
+//                    } else  {
+//                        if (System.currentTimeMillis() - t >= 5000 && bol) {
+//                            t = System.currentTimeMillis();
+//                            bol = false;
+//                            handler.post(() -> makeNote("Значение датчика t = " + Float.toString(curValue)));
+//                        }
+//                    }
+//                }
+//                @Override
+//                public void onAccuracyChanged(Sensor sensor, int accuracy) {
+//
+//                }
+//            };
+//            sensorManager.registerListener(listenerTemp, sensorTemp,
+//                    SensorManager.SENSOR_DELAY_NORMAL);
+//        });
+//        mWorkerThread.start();
+//        mWorkerThread.prepareHandler();
+//        mWorkerThread.postTask(task);
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -144,7 +171,7 @@ public class BackgroundService extends Service {
     public void onDestroy() {
         super.onDestroy();
         sensorManager.unregisterListener(listenerTemp, sensorTemp);
-        mWorkerThread.quit();
+//        mWorkerThread.quit();
 //        makeNote("onDestroy");
     }
 }
