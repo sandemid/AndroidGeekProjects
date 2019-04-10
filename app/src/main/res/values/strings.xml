@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Car Costs</string>
+    <string name="app_name">Test App</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="nav_header_title">Current User</string>
@@ -33,4 +33,17 @@
     <string name="ok" translatable="false">OK</string>
     <string name="button_start_service_name">Запуск service</string>
     <string name="button_start_async_name">Запуск Async</string>
+    <string name="weather_sunny">☀</string>
+    <string name="weather_clear_night">✶</string>
+    <string name="weather_foggy">☰</string>
+    <string name="weather_cloudy">☁</string>
+    <string name="weather_rainy">☂</string>
+    <string name="weather_snowy">❄</string>
+    <string name="weather_thunder">↯</string>
+    <string name="weather_drizzle">☌</string>
+    <string name="place_not_found">Place not found</string>
+    <string name="change_city">Change city</string>
+    <string name="nav_menu_main">Главная</string>
+    <string name="menu_change_city">Выбрать город</string>
+    <string name="change_city_default">Сохранить указанный город по умолчанию?</string>
 </resources>

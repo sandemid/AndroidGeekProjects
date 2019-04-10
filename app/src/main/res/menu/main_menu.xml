@@ -41,19 +41,24 @@
                 android:id="@+id/menu_sort_sum_dec"
                 android:orderInCategory="60"
                 android:title="@string/menu_sort_sum_dec"
-                app:showAsAction="never" />
+                app:showAsAction="always" />
         </menu>
     </item>
+    <!--<item-->
+        <!--android:id="@+id/menu_search"-->
+        <!--android:orderInCategory="10"-->
+        <!--android:title="@string/menu_search"-->
+        <!--android:icon="@android:drawable/ic_menu_search"-->
+        <!--app:actionViewClass="android.widget.SearchView"-->
+        <!--app:showAsAction="ifRoom" />-->
     <item
-        android:id="@+id/menu_search"
-        android:orderInCategory="10"
-        android:title="@string/menu_search"
-        android:icon="@android:drawable/ic_menu_search"
-        app:actionViewClass="android.widget.SearchView"
-        app:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/menu_change"
+        android:id="@+id/menu_change_item"
         android:orderInCategory="20"
         android:title="@string/menu_change"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/menu_change_city"
+        android:orderInCategory="10"
+        android:title="@string/menu_change_city"
+        app:showAsAction="always" />
 </menu>
