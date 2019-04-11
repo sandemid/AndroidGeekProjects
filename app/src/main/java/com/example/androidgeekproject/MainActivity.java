@@ -4,23 +4,27 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
 import android.widget.PopupMenu;
-import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,12 +37,22 @@ import com.example.androidgeekproject.fragments.NavURLFragment;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    Fragments currentFragment = new Fragments();
+    private final String KEY1 = "DEFAULT_WEATHER_CITY";
+    private boolean showSaveDefaultCityDialog = true;
     private boolean serviceRun = false;
+    private Fragments currentFragment = new Fragments();
+    private WeatherDataParser weatherDataParser;
+    private TextView cityTextView;
+    private TextView updatedTextView;
+    private TextView detailsTextView;
+    private TextView currentTemperatureTextView;
+    private TextView weatherIconTextView;
+    private SharedPreferences sharedPreferences;
     private BroadcastReceiver broadcastReceiver;
     private SensorManager sensorManager;
     private Sensor sensorTemperature;
     private Sensor sensorHumidity;
+    private Handler handler;
     private SensorEventListener listenerTemp = new SensorEventListener() {
         @Override
         public void onSensorChanged(SensorEvent event) {
@@ -67,11 +81,34 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        handler = new Handler();
+        sharedPreferences = getPreferences(Context.MODE_PRIVATE);
         initActionBar();
+        initViews();
         initNavView();
         initSensors();
+        //загружаем погоду для города из настроек по умолчанию
+        loadDefaultCityWeather();
+        //мониторит создание интента на запуск сервиса BackgroundService из фрагмента NavAboutFragment
+        startBroadcastReceiver();
+    }
 
-        //мониторит создание интента на запуск сервиса из фрагмента NavAboutFragment
+    private void loadDefaultCityWeather() {
+        String city = sharedPreferences.getString(KEY1, null);
+        if (city != null) {
+            new Thread(() -> {
+                weatherDataParser = new WeatherDataParser(getApplicationContext(), WeatherDataLoader.getJSONData(city));
+                if (weatherDataParser.updateWeatherData()){
+                    handler.post(this::updateWeatherViews);
+                } else {
+                    handler.post(() -> Toast.makeText(MainActivity.this, "Для указанного города не нашлось информации: "
+                            + city, Toast.LENGTH_SHORT).show());
+                }
+            }).start();
+        }
+    }
+
+    private void startBroadcastReceiver() {
         broadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -91,6 +128,14 @@ public class MainActivity extends AppCompatActivity
 
         IntentFilter filter = new IntentFilter(NavAboutFragment.BROADCAST_ACTION);
         this.registerReceiver(broadcastReceiver, filter);
+    }
+
+    private void initViews() {
+        cityTextView = findViewById(R.id.city_field);
+        updatedTextView = findViewById(R.id.updated_field);
+        detailsTextView = findViewById(R.id.details_field);
+        currentTemperatureTextView = findViewById(R.id.current_temperature_field);
+        weatherIconTextView = findViewById(R.id.weather_icon);
     }
 
     private void initSensors() {
@@ -179,21 +224,22 @@ public class MainActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main_menu, menu);
-        MenuItem search = menu.findItem(R.id.menu_search);
-        SearchView searchView = (SearchView) search.getActionView();
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                TextView s = findViewById(R.id.main_text_view);
-                s.setText(query);
-                return true;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                return true;
-            }
-        });
+//        Реализация кнопки поиска со слушателем ввода текста
+//        MenuItem search = menu.findItem(R.id.menu_search);
+//        SearchView searchView = (SearchView) search.getActionView();
+//        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+//            @Override
+//            public boolean onQueryTextSubmit(String query) {
+//                TextView s = findViewById(R.id.main_text_view);
+//                s.setText(query);
+//                return true;
+//            }
+//
+//            @Override
+//            public boolean onQueryTextChange(String newText) {
+//                return true;
+//            }
+//        });
         return true;
     }
 
@@ -207,7 +253,7 @@ public class MainActivity extends AppCompatActivity
         //noinspection SimplifiableIfStatement
 
         switch (id){
-            case R.id.menu_change:
+            case R.id.menu_change_item:
                 changeItem();
                 return true;
             case R.id.menu_sort_name_inc:
@@ -232,9 +278,67 @@ public class MainActivity extends AppCompatActivity
                 Toast.makeText(MainActivity.this, R.string.toast_settings_description,
                         Toast.LENGTH_SHORT).show();
                 return true;
+            case R.id.menu_change_city:
+                showInputDialog();
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void showInputDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.change_city);
+
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+        builder.setPositiveButton("OK", (dialog, which) -> new Thread(() -> {
+            weatherDataParser = new WeatherDataParser(getApplicationContext(), WeatherDataLoader.getJSONData(input.getText().toString()));
+            if (weatherDataParser.updateWeatherData()){
+                handler.post(() -> {
+                    updateWeatherViews();
+                    //диалог сохранения значения по умолчанию показывается только один раз
+                    //в течение жизненного цикла Активити при вводе корректного города отличного от дефолтного,
+                    //и по которому срабатывает GET-запрос
+                if (showSaveDefaultCityDialog && !sharedPreferences.getString(KEY1, " ").equals(input.getText().toString())) {
+                        showSaveDefaultCityDialog = false;
+                        showSaveDefaultCityDialog(input.getText().toString());
+                    }
+                });
+            } else {
+                handler.post(() -> Toast.makeText(MainActivity.this, "Для указанного города не нашлось информации: "
+                                + input.getText().toString(), Toast.LENGTH_SHORT).show());
+            }
+        }).start());
+        builder.show();
+    }
+
+    private void showSaveDefaultCityDialog(String city) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(city);
+        builder.setTitle(R.string.change_city_default);
+        builder.setPositiveButton("YES", (dialog, which) -> {
+            saveToPreference(sharedPreferences, city);
+        });
+
+        builder.setNegativeButton("NO", (dialog, which) -> {
+        });
+
+        builder.show();
+    }
+
+    private void saveToPreference(SharedPreferences sharedPreferences, String city) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(KEY1, city);
+        editor.apply();
+    }
+
+    private void updateWeatherViews() {
+        cityTextView.setText(weatherDataParser.getPlaceName());
+        updatedTextView.setText(weatherDataParser.getUpdatedText());
+        detailsTextView.setText(weatherDataParser.getDetails());
+        currentTemperatureTextView.setText(weatherDataParser.getCurrentTemp());
+        weatherIconTextView.setText(weatherDataParser.getIcon());
     }
 
     private void sortItemSumDec() {
@@ -294,10 +398,12 @@ public class MainActivity extends AppCompatActivity
             NavURLFragment navURLFragment = new NavURLFragment();
             transaction.replace(R.id.fragmentContainer, navURLFragment);
             currentFragment = navURLFragment;
+        } else if (id == R.id.nav_main) {
+            transaction.remove(currentFragment);
         } else if (id == R.id.nav_share) {
             transaction.remove(currentFragment);
         } else if (id == R.id.nav_send) {
-
+            transaction.remove(currentFragment);
         }
         transaction.commit();
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
