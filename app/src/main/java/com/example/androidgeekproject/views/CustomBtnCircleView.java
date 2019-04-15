@@ -15,7 +15,9 @@ import android.widget.Toast;
 
 import com.example.androidgeekproject.R;
 
-public class CustomBtnCircleView extends View  {
+import java.io.Serializable;
+
+public class CustomBtnCircleView extends View  implements Serializable {
 
     private final static String TAG = "CustomBtnCircleView";
     private Paint paint;
@@ -47,6 +49,7 @@ public class CustomBtnCircleView extends View  {
         Log.d(TAG, "Constructor");
         paint = new Paint();
         paint.setColor(color);
+        paint.setTextAlign(Paint.Align.CENTER);
         paint.setStyle(Paint.Style.FILL);
     }
 
@@ -72,10 +75,10 @@ public class CustomBtnCircleView extends View  {
         Log.d(TAG, "onDraw");
         super.onDraw(canvas);
         if(pressed) {
-            canvas.drawCircle(getWidth() / 2, 250, radius/10, paint);
+            canvas.drawCircle(getWidth() / 2, 300, radius/10, paint);
         }
         else {
-            canvas.drawCircle(getWidth() / 2, 250, radius, paint);
+            canvas.drawCircle(getWidth() / 2, 300, radius, paint);
         }
     }
 

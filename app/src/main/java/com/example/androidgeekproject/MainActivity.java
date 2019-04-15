@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -37,16 +38,17 @@ import com.example.androidgeekproject.fragments.NavURLFragment;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    private final String KEY1 = "DEFAULT_WEATHER_CITY";
     private boolean showSaveDefaultCityDialog = true;
     private boolean serviceRun = false;
-    private Fragments currentFragment = new Fragments();
+    private static int currentOrientation = 0;
+    private static Fragments currentFragment = new Fragments();
     private WeatherDataParser weatherDataParser;
     private TextView cityTextView;
     private TextView updatedTextView;
     private TextView detailsTextView;
     private TextView currentTemperatureTextView;
     private TextView weatherIconTextView;
+    private String detailsText;
     private SharedPreferences sharedPreferences;
     private BroadcastReceiver broadcastReceiver;
     private SensorManager sensorManager;
@@ -87,14 +89,45 @@ public class MainActivity extends AppCompatActivity
         initViews();
         initNavView();
         initSensors();
+        currentOrientation = getResources().getConfiguration().orientation;
         //загружаем погоду для города из настроек по умолчанию
-        loadDefaultCityWeather();
+
+        if (savedInstanceState == null) {
+            loadDefaultCityWeather();
+        }
         //мониторит создание интента на запуск сервиса BackgroundService из фрагмента NavAboutFragment
         startBroadcastReceiver();
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle saveInstanceState){
+        saveInstanceState.putString(MainActivityKeys.KEY_CITY_TEXT_VIEW.getDescription(), cityTextView.getText().toString());
+        saveInstanceState.putString(MainActivityKeys.KEY_TEMPERATURE_TEXT_VIEW.getDescription(), currentTemperatureTextView.getText().toString());
+        saveInstanceState.putString(MainActivityKeys.KEY_UPDATED_TEXT_VIEW.getDescription(), updatedTextView.getText().toString());
+        saveInstanceState.putString(MainActivityKeys.KEY_WEATHER_ICON_TEXT_VIEW.getDescription(), weatherIconTextView.getText().toString());
+        saveInstanceState.putBoolean(MainActivityKeys.KEY_SHOW_DEF_CIT_DIALOG.getDescription(), showSaveDefaultCityDialog);
+        saveInstanceState.putBoolean(MainActivityKeys.KEY_SERVICE_RUN.getDescription(),serviceRun);
+        saveInstanceState.putString(MainActivityKeys.KEY_DETAILS_TEXT.getDescription(), detailsText);
+        super.onSaveInstanceState(saveInstanceState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle saveInstanceState) {
+        super.onRestoreInstanceState(saveInstanceState);
+        cityTextView.setText(saveInstanceState.getString(MainActivityKeys.KEY_CITY_TEXT_VIEW.getDescription()));
+        currentTemperatureTextView.setText(saveInstanceState.getString(MainActivityKeys.KEY_TEMPERATURE_TEXT_VIEW.getDescription()));
+        updatedTextView.setText(saveInstanceState.getString(MainActivityKeys.KEY_UPDATED_TEXT_VIEW.getDescription()));
+        weatherIconTextView.setText(saveInstanceState.getString(MainActivityKeys.KEY_WEATHER_ICON_TEXT_VIEW.getDescription()));
+        showSaveDefaultCityDialog = saveInstanceState.getBoolean(MainActivityKeys.KEY_SHOW_DEF_CIT_DIALOG.getDescription());
+        serviceRun = saveInstanceState.getBoolean(MainActivityKeys.KEY_SERVICE_RUN.getDescription());
+        detailsText = saveInstanceState.getString(MainActivityKeys.KEY_DETAILS_TEXT.getDescription());
+        if (currentOrientation != Configuration.ORIENTATION_LANDSCAPE) {
+            detailsTextView.setText(detailsText);
+        }
+    }
+
     private void loadDefaultCityWeather() {
-        String city = sharedPreferences.getString(KEY1, null);
+        String city = sharedPreferences.getString(MainActivityKeys.KEY1.getDescription(), null);
         if (city != null) {
             new Thread(() -> {
                 weatherDataParser = new WeatherDataParser(getApplicationContext(), WeatherDataLoader.getJSONData(city));
@@ -275,7 +308,7 @@ public class MainActivity extends AppCompatActivity
                     //диалог сохранения значения по умолчанию показывается только один раз
                     //в течение жизненного цикла Активити при вводе корректного города отличного от дефолтного,
                     //и по которому срабатывает GET-запрос
-                if (showSaveDefaultCityDialog && !sharedPreferences.getString(KEY1, " ").equals(input.getText().toString())) {
+                if (showSaveDefaultCityDialog && !sharedPreferences.getString(MainActivityKeys.KEY1.getDescription(), " ").equals(input.getText().toString())) {
                         showSaveDefaultCityDialog = false;
                         showSaveDefaultCityDialog(input.getText().toString());
                     }
@@ -304,14 +337,17 @@ public class MainActivity extends AppCompatActivity
 
     private void saveToPreference(SharedPreferences sharedPreferences, String city) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(KEY1, city);
+        editor.putString(MainActivityKeys.KEY1.getDescription(), city);
         editor.apply();
     }
 
     private void updateWeatherViews() {
         cityTextView.setText(weatherDataParser.getPlaceName());
         updatedTextView.setText(weatherDataParser.getUpdatedText());
-        detailsTextView.setText(weatherDataParser.getDetails());
+        detailsText = weatherDataParser.getDetails();
+        if (currentOrientation != Configuration.ORIENTATION_LANDSCAPE) {
+            detailsTextView.setText(detailsText);
+        }
         currentTemperatureTextView.setText(weatherDataParser.getCurrentTemp());
         weatherIconTextView.setText(weatherDataParser.getIcon());
     }
