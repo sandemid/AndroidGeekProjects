@@ -7,7 +7,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public class WeatherDataLoader {
+class WeatherDataLoader {
     private static final String OPEN_WEATHER_API_KEY = "f3f2763fe63803beef4851d6365c83bc";
     private static final String OPEN_WEATHER_API_URL = "https://api.openweathermap.org/data/2.5/weather?q=%s&units=metric";
     private static final String KEY = "x-api-key";

@@ -8,8 +8,9 @@ import org.json.JSONObject;
 
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.Locale;
 
-public class WeatherDataParser {
+class WeatherDataParser {
 
     private final static String LOG_TAG = WeatherDataParser.class.getSimpleName();
     private String placeName;
@@ -20,12 +21,12 @@ public class WeatherDataParser {
     private JSONObject jsonObject;
     private Context context;
 
-    public WeatherDataParser(Context context, JSONObject jsonObject) {
+    WeatherDataParser(Context context, JSONObject jsonObject) {
         this.jsonObject = jsonObject;
         this.context = context;
     }
 
-    public boolean updateWeatherData() {
+    boolean updateWeatherData() {
         try {
             if(jsonObject == null) {
                 return false;
@@ -66,7 +67,6 @@ public class WeatherDataParser {
         if(actualId == 800) {
             long currentTime = new Date().getTime();
             if(currentTime >= sunrise && currentTime < sunset) {
-//                icon = "\u1F31";
                 icon = context.getResources().getString(R.string.weather_sunny);
             } else {
                 icon = context.getResources().getString(R.string.weather_clear_night);
@@ -94,7 +94,6 @@ public class WeatherDataParser {
                     break;
                 }
                 case 8: {
-//                    icon = "\u2601";
                      icon = context.getResources().getString(R.string.weather_cloudy);
                     break;
                 }
@@ -106,45 +105,41 @@ public class WeatherDataParser {
     private void setUpdatedText(JSONObject jsonObject) throws JSONException {
         DateFormat dateFormat = DateFormat.getDateTimeInstance();
         String updateOn = dateFormat.format(new Date(jsonObject.getLong("dt") * 1000));
-        String updatedText = "Last update: " + updateOn;
-        this.updatedText = updatedText;
+        this.updatedText = "Last update: " + updateOn;
     }
 
     private void setCurrentTemp(JSONObject main) throws JSONException {
-        String currentTextText = String.format("%.2f", main.getDouble("temp")) + "\u2103";
-        currentTemp = currentTextText;
+        currentTemp = String.format(Locale.getDefault(), "%.2f", main.getDouble("temp")) + "\u2103";
     }
 
     private void setDetails(JSONObject details, JSONObject main) throws JSONException {
-        String detailsText = details.getString("description").toUpperCase() + "\n"
+        this.details = details.getString("description").toUpperCase() + "\n"
                 + "Humidity: " + main.getString("humidity") + "%" + "\n"
                 + "Pressure: " + main.getString("pressure") + "hPa";
-        this.details = detailsText;
     }
 
     private void setPlaceName(JSONObject jsonObject) throws JSONException {
-        String cityText = jsonObject.getString("name").toUpperCase() + ", "
+        placeName = jsonObject.getString("name").toUpperCase() + ", "
                 + jsonObject.getJSONObject("sys").getString("country");
-        placeName = cityText;
     }
 
-    public String getPlaceName() {
+    String getPlaceName() {
         return placeName;
     }
 
-    public String getCurrentTemp() {
+    String getCurrentTemp() {
         return currentTemp;
     }
 
-    public String getIcon() {
+    String getIcon() {
         return icon;
     }
 
-    public String getUpdatedText() {
+    String getUpdatedText() {
         return updatedText;
     }
 
-    public String getDetails() {
+    String getDetails() {
         return details;
     }
 }
