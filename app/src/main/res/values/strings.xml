@@ -33,14 +33,14 @@
     <string name="ok" translatable="false">OK</string>
     <string name="button_start_service_name">Запуск service</string>
     <string name="button_start_async_name">Запуск Async</string>
-    <string name="weather_sunny">☀</string>
-    <string name="weather_clear_night">✶</string>
-    <string name="weather_foggy">☰</string>
-    <string name="weather_cloudy">☁</string>
-    <string name="weather_rainy">☂</string>
-    <string name="weather_snowy">❄</string>
-    <string name="weather_thunder">↯</string>
-    <string name="weather_drizzle">☌</string>
+    <string name="weather_sunny">https://purepng.com/public/uploads/large/purepng.com-sunsunlightrayssolar-1411527180623fxabq.png</string>
+    <string name="weather_clear_night">https://avatanplus.com/files/resources/original/575ef186963081554adf75d7.png</string>
+    <string name="weather_foggy">https://teamninja-studio.com/doa6/us/images/common/cloud002.png</string>
+    <string name="weather_cloudy">https://purepng.com/public/uploads/large/purepng.com-small-single-cloudcloudskycloudyclearskynature-221519326618duicg.png</string>
+    <string name="weather_rainy">https://ya-webdesign.com/images/beads-vector-water-1.png</string>
+    <string name="weather_snowy">https://www.proza.ru/pics/2018/11/28/1171.jpg</string>
+    <string name="weather_thunder">http://pluspng.com/img-png/png-thunder-lightning-nd-thunder-by-xxhazukiixx-900.png</string>
+    <string name="weather_drizzle">http://pngimg.com/uploads/water/water_PNG3293.png</string>
     <string name="place_not_found">Place not found</string>
     <string name="change_city">Change city</string>
     <string name="nav_menu_main">Главная</string>
