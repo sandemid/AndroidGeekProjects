@@ -42,8 +42,6 @@ public class CompoundView extends RelativeLayout {
         initViews();
         setOnCallBtnClickBehaviour();
         setOnSendSmsBtnClickBehaviour();
-        //set listeners...
-        //all other code...
     }
 
     private void initViews() {
@@ -72,9 +70,6 @@ public class CompoundView extends RelativeLayout {
             intent.putExtra("sms_body", smsText);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             getContext().startActivity(intent);
-
-            /*SmsManager.getDefault().sendTextMessage(phoneNumber, null, smsText,
-                    null, null);*/
         });
     }
 }

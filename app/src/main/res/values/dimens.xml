@@ -6,5 +6,5 @@
     <dimen name="nav_header_height">176dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="updated_font_size">13sp</dimen>
-    <dimen name="icon_font_size">40sp</dimen>
+    <dimen name="icon_font_size">72sp</dimen>
 </resources>

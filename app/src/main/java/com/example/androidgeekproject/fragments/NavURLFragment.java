@@ -12,14 +12,27 @@ import android.widget.LinearLayout;
 import com.example.androidgeekproject.R;
 
 public class NavURLFragment extends Fragments {
+
+    LinearLayout layout;
+    WebView webView;
+    boolean isFragmentAlreadyLoaded = false;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        LinearLayout layout;
-        layout = (LinearLayout) inflater.inflate(R.layout.nav_urlfragment_layout, container, false);
-        WebView webView = layout.findViewById(R.id.browse);
-        webView.loadUrl("https://geekbrains.ru/");
+        if (savedInstanceState == null && !isFragmentAlreadyLoaded){
+            layout = (LinearLayout) inflater.inflate(R.layout.nav_urlfragment_layout, container, false);
+            webView = layout.findViewById(R.id.browse);
+            webView.loadUrl("https://geekbrains.ru/");
+            isFragmentAlreadyLoaded = true;
+        }
         return layout;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
     }
 }

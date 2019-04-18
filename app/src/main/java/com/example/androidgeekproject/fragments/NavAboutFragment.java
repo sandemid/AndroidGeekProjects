@@ -27,6 +27,7 @@ public class NavAboutFragment extends Fragments {
     TextView resultText;
     ProgressBar progressBar;
     Handler handler;
+    boolean isFragmentAlreadyLoaded = false;
     public static final String BROADCAST_ACTION = "com.example.androidgeekproject.fragments.NavAboutFragment";
     public static final String KEY_FROM_FRAGMENT = "SERVICE_START";
 
@@ -34,11 +35,20 @@ public class NavAboutFragment extends Fragments {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        layout = (LinearLayout) inflater.inflate(R.layout.nav_aboutfragment_layout, container, false);
-        handler = new Handler();
-        initViews(layout);
-        setOnClickListeners();
+        if(savedInstanceState == null && !isFragmentAlreadyLoaded) {
+            layout = (LinearLayout) inflater.inflate(R.layout.nav_aboutfragment_layout, container, false);
+            handler = new Handler();
+            initViews(layout);
+            setOnClickListeners();
+            isFragmentAlreadyLoaded = true;
+        }
         return layout;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
     }
 
     private void setOnClickListeners() {

@@ -9,13 +9,15 @@ import android.view.View;
 
 import com.example.androidgeekproject.R;
 
-public class CustomTextView extends View {
+import java.io.Serializable;
+
+public class CustomTextView extends View  implements Serializable {
 
     private final static String TAG = "CustomTextView";
     private boolean onClick = false;
     private Paint paint;
     private int color = Color.BLACK;
-    private String text;
+    private String text = "";
 
     public CustomTextView(Context context) {
         super(context);
@@ -26,6 +28,7 @@ public class CustomTextView extends View {
         Log.d(TAG, "Constructor");
         paint = new Paint();
         paint.setAntiAlias(true);
+        paint.setTextAlign(Paint.Align.CENTER);
         paint.setColor(color);
         paint.setTextSize(40.0f);
 
@@ -42,12 +45,12 @@ public class CustomTextView extends View {
 
         if (!onClick) {
             paint.setColor(getResources().getColor(R.color.colorFirst));
-            canvas.drawText("", 200, 400, paint);
+            canvas.drawText("", canvas.getWidth()/2, canvas.getHeight()/2 + 150, paint);
             paint.setColor(color);
             onClick = true;
             return;
         }
 
-        canvas.drawText(text, 200, 400, paint);
+        canvas.drawText(text, canvas.getWidth()/2, canvas.getHeight()/2 + 150, paint);
     }
 }
