@@ -1,63 +1,78 @@
 package com.example.androidgeekproject;
 
-import android.content.Context;
-import android.util.Log;
+import android.support.annotation.NonNull;
+import android.widget.Toast;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.example.androidgeekproject.rest.OpenWeatherRepo;
+import com.example.androidgeekproject.rest.entites.WeatherRequestRestModel;
 
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 class WeatherDataParser {
 
-    private final static String LOG_TAG = WeatherDataParser.class.getSimpleName();
+    private static final String OPEN_WEATHER_API_KEY = "f3f2763fe63803beef4851d6365c83bc";
+    private static WeatherDataParser weatherDataParser = null;
     private String placeName;
     private String currentTemp;
     private String icon;
     private String updatedText;
     private String details;
-    private JSONObject jsonObject;
-    private Context context;
+    private WeatherRequestRestModel model;
+    private MainActivity activity;
 
-    WeatherDataParser(Context context, JSONObject jsonObject) {
-        this.jsonObject = jsonObject;
-        this.context = context;
+    private WeatherDataParser() {
+        model = new WeatherRequestRestModel();
     }
 
-    boolean updateWeatherData() {
-        try {
-            if(jsonObject == null) {
-                return false;
-            } else {
-                renderWeather();
-                return true;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            Log.e(LOG_TAG, "One or more fields not found in the JSON data");
-            return false;
+    static WeatherDataParser getInstance() {
+        if(weatherDataParser == null) {
+            weatherDataParser = new WeatherDataParser();
         }
+        return weatherDataParser;
+    }
+
+    void setActivity(MainActivity activity) {
+        this.activity = activity;
+    }
+
+    void loadWeather(String city) {
+
+        OpenWeatherRepo.getSingleton().getAPI().loadWeather(city,
+                OPEN_WEATHER_API_KEY, "metric")
+                .enqueue(new Callback<WeatherRequestRestModel>() {
+                    @Override
+                    public void onResponse(@NonNull Call<WeatherRequestRestModel> call,
+                                           @NonNull Response<WeatherRequestRestModel> response) {
+                        if (response.body() != null && response.isSuccessful()) {
+                            model = response.body();
+                            renderWeather();
+                            activity.updateWeatherViews();
+                        } else {
+                            Toast.makeText(activity.getApplicationContext(), "Для указанного города не нашлось информации: "
+                                    + city, Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<WeatherRequestRestModel> call, Throwable t) {
+                        Toast.makeText(activity.getApplicationContext(), "Для указанного города не нашлось информации: "
+                                + city, Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     private void renderWeather() {
-        Log.d(LOG_TAG, "json: " + jsonObject.toString());
-        try {
-            JSONObject details = jsonObject.getJSONArray("weather").getJSONObject(0);
-            JSONObject main = jsonObject.getJSONObject("main");
-
-            setPlaceName(jsonObject);
-            setDetails(details, main);
-            setCurrentTemp(main);
-            setUpdatedText(jsonObject);
-            setWeatherIcon(details.getInt("id"),
-                    jsonObject.getJSONObject("sys").getLong("sunrise") * 1000,
-                    jsonObject.getJSONObject("sys").getLong("sunset") * 1000);
-        } catch (Exception exc) {
-            exc.printStackTrace();
-            Log.e(LOG_TAG, "One or more fields not found in the JSON data");
-        }
+        setPlaceName();
+        setDetails();
+        setCurrentTemp();
+        setUpdatedText();
+        setWeatherIcon(model.weather[0].id,model.sys.sunrise* 1000,model.sys.sunset * 1000);
     }
 
     private void setWeatherIcon(int actualId, long sunrise, long sunset) {
@@ -67,34 +82,38 @@ class WeatherDataParser {
         if(actualId == 800) {
             long currentTime = new Date().getTime();
             if(currentTime >= sunrise && currentTime < sunset) {
-                icon = context.getResources().getString(R.string.weather_sunny);
+                icon = activity.getApplicationContext().getResources().getString(R.string.weather_sunny);
             } else {
-                icon = context.getResources().getString(R.string.weather_clear_night);
+                icon = activity.getApplicationContext().getResources().getString(R.string.weather_clear_night);
             }
         } else {
             switch (id) {
                 case 2: {
-                    icon = context.getResources().getString(R.string.weather_thunder);
+                    icon = activity.getApplicationContext().getResources().getString(R.string.weather_thunder);
                     break;
                 }
                 case 3: {
-                    icon = context.getResources().getString(R.string.weather_drizzle);
+                    icon = activity.getApplicationContext().getResources().getString(R.string.weather_drizzle);
                     break;
                 }
                 case 5: {
-                    icon = context.getResources().getString(R.string.weather_rainy);
+                    icon = activity.getApplicationContext().getResources().getString(R.string.weather_rainy);
                     break;
                 }
                 case 6: {
-                    icon = context.getResources().getString(R.string.weather_snowy);
+                    icon = activity.getApplicationContext().getResources().getString(R.string.weather_snowy);
                     break;
                 }
                 case 7: {
-                    icon = context.getResources().getString(R.string.weather_foggy);
+                    icon = activity.getApplicationContext().getResources().getString(R.string.weather_foggy);
                     break;
                 }
                 case 8: {
-                     icon = context.getResources().getString(R.string.weather_cloudy);
+                     icon = activity.getApplicationContext().getResources().getString(R.string.weather_cloudy);
+                    break;
+                }
+                default: {
+                    icon = activity.getApplicationContext().getResources().getString(R.string.weather_cloudy);
                     break;
                 }
             }
@@ -102,25 +121,24 @@ class WeatherDataParser {
         this.icon = icon;
     }
 
-    private void setUpdatedText(JSONObject jsonObject) throws JSONException {
+    private void setUpdatedText(){
         DateFormat dateFormat = DateFormat.getDateTimeInstance();
-        String updateOn = dateFormat.format(new Date(jsonObject.getLong("dt") * 1000));
+        String updateOn = dateFormat.format(new Date(model.dt * 1000));
         this.updatedText = "Last update: " + updateOn;
     }
 
-    private void setCurrentTemp(JSONObject main) throws JSONException {
-        currentTemp = String.format(Locale.getDefault(), "%.2f", main.getDouble("temp")) + "\u2103";
+    private void setCurrentTemp() {
+        currentTemp = String.format(Locale.getDefault(), "%.2f", model.main.temp) + "\u2103";
     }
 
-    private void setDetails(JSONObject details, JSONObject main) throws JSONException {
-        this.details = details.getString("description").toUpperCase() + "\n"
-                + "Humidity: " + main.getString("humidity") + "%" + "\n"
-                + "Pressure: " + main.getString("pressure") + "hPa";
+    private void setDetails() {
+        this.details = model.weather[0].description.toUpperCase() + "\n"
+                + "Humidity: " + model.main.humidity + "%" + "\n"
+                + "Pressure: " + model.main.pressure + "hPa";
     }
 
-    private void setPlaceName(JSONObject jsonObject) throws JSONException {
-        placeName = jsonObject.getString("name").toUpperCase() + ", "
-                + jsonObject.getJSONObject("sys").getString("country");
+    private void setPlaceName() {
+        placeName = model.name.toUpperCase() + ", " + model.sys.country;
     }
 
     String getPlaceName() {

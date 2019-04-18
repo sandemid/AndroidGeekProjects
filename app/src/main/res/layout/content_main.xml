@@ -25,15 +25,20 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:textSize="@dimen/updated_font_size" />
 
+    <ImageView
+        android:id="@+id/imageViewWeather"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_below="@+id/updated_field"
+        android:layout_centerHorizontal="true"/>
+
     <TextView
-        android:id="@+id/weather_icon"
+        android:id="@+id/details_field"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/updated_field"
+        android:layout_below="@+id/imageViewWeather"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textSize="@dimen/icon_font_size" />
+        android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <TextView
         android:id="@+id/current_temperature_field"
@@ -44,14 +49,6 @@
         android:layout_marginBottom="25dp"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textSize="@dimen/icon_font_size" />
-
-    <TextView
-        android:id="@+id/details_field"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/weather_icon"
-        android:layout_centerHorizontal="true"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <FrameLayout
         android:id="@+id/fragmentContainer"

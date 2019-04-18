@@ -11,7 +11,6 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentTransaction;
@@ -25,6 +24,7 @@ import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -34,6 +34,8 @@ import com.example.androidgeekproject.fragments.NavAboutFragment;
 import com.example.androidgeekproject.fragments.NavContactFragment;
 import com.example.androidgeekproject.fragments.NavMyProfileFragment;
 import com.example.androidgeekproject.fragments.NavURLFragment;
+import com.example.androidgeekproject.transform.CircularTransformation;
+import com.squareup.picasso.Picasso;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -47,14 +49,14 @@ public class MainActivity extends AppCompatActivity
     private TextView updatedTextView;
     private TextView detailsTextView;
     private TextView currentTemperatureTextView;
-    private TextView weatherIconTextView;
+    private ImageView imageViewWeather;
     private String detailsText;
+    private String weatherImageURI;
     private SharedPreferences sharedPreferences;
     private BroadcastReceiver broadcastReceiver;
     private SensorManager sensorManager;
     private Sensor sensorTemperature;
     private Sensor sensorHumidity;
-    private Handler handler;
     private SensorEventListener listenerTemp = new SensorEventListener() {
         @Override
         public void onSensorChanged(SensorEvent event) {
@@ -83,19 +85,15 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        handler = new Handler();
         sharedPreferences = getPreferences(Context.MODE_PRIVATE);
         initActionBar();
         initViews();
         initNavView();
         initSensors();
         currentOrientation = getResources().getConfiguration().orientation;
-        //загружаем погоду для города из настроек по умолчанию
-
         if (savedInstanceState == null) {
             loadDefaultCityWeather();
         }
-        //мониторит создание интента на запуск сервиса BackgroundService из фрагмента NavAboutFragment
         startBroadcastReceiver();
     }
 
@@ -104,10 +102,10 @@ public class MainActivity extends AppCompatActivity
         saveInstanceState.putString(MainActivityKeys.KEY_CITY_TEXT_VIEW.getDescription(), cityTextView.getText().toString());
         saveInstanceState.putString(MainActivityKeys.KEY_TEMPERATURE_TEXT_VIEW.getDescription(), currentTemperatureTextView.getText().toString());
         saveInstanceState.putString(MainActivityKeys.KEY_UPDATED_TEXT_VIEW.getDescription(), updatedTextView.getText().toString());
-        saveInstanceState.putString(MainActivityKeys.KEY_WEATHER_ICON_TEXT_VIEW.getDescription(), weatherIconTextView.getText().toString());
         saveInstanceState.putBoolean(MainActivityKeys.KEY_SHOW_DEF_CIT_DIALOG.getDescription(), showSaveDefaultCityDialog);
         saveInstanceState.putBoolean(MainActivityKeys.KEY_SERVICE_RUN.getDescription(),serviceRun);
         saveInstanceState.putString(MainActivityKeys.KEY_DETAILS_TEXT.getDescription(), detailsText);
+        saveInstanceState.putString(MainActivityKeys.KEY_WEATHER_ICON_TEXT_VIEW.getDescription(), weatherImageURI);
         super.onSaveInstanceState(saveInstanceState);
     }
 
@@ -117,10 +115,11 @@ public class MainActivity extends AppCompatActivity
         cityTextView.setText(saveInstanceState.getString(MainActivityKeys.KEY_CITY_TEXT_VIEW.getDescription()));
         currentTemperatureTextView.setText(saveInstanceState.getString(MainActivityKeys.KEY_TEMPERATURE_TEXT_VIEW.getDescription()));
         updatedTextView.setText(saveInstanceState.getString(MainActivityKeys.KEY_UPDATED_TEXT_VIEW.getDescription()));
-        weatherIconTextView.setText(saveInstanceState.getString(MainActivityKeys.KEY_WEATHER_ICON_TEXT_VIEW.getDescription()));
         showSaveDefaultCityDialog = saveInstanceState.getBoolean(MainActivityKeys.KEY_SHOW_DEF_CIT_DIALOG.getDescription());
         serviceRun = saveInstanceState.getBoolean(MainActivityKeys.KEY_SERVICE_RUN.getDescription());
         detailsText = saveInstanceState.getString(MainActivityKeys.KEY_DETAILS_TEXT.getDescription());
+        weatherImageURI = saveInstanceState.getString(MainActivityKeys.KEY_WEATHER_ICON_TEXT_VIEW.getDescription());
+        loadImage(weatherImageURI);
         if (currentOrientation != Configuration.ORIENTATION_LANDSCAPE) {
             detailsTextView.setText(detailsText);
         }
@@ -129,15 +128,9 @@ public class MainActivity extends AppCompatActivity
     private void loadDefaultCityWeather() {
         String city = sharedPreferences.getString(MainActivityKeys.KEY1.getDescription(), null);
         if (city != null) {
-            new Thread(() -> {
-                weatherDataParser = new WeatherDataParser(getApplicationContext(), WeatherDataLoader.getJSONData(city));
-                if (weatherDataParser.updateWeatherData()){
-                    handler.post(this::updateWeatherViews);
-                } else {
-                    handler.post(() -> Toast.makeText(MainActivity.this, "Для указанного города не нашлось информации: "
-                            + city, Toast.LENGTH_SHORT).show());
-                }
-            }).start();
+            weatherDataParser = WeatherDataParser.getInstance();
+            weatherDataParser.setActivity(this);
+            weatherDataParser.loadWeather(city);
         }
     }
 
@@ -168,7 +161,7 @@ public class MainActivity extends AppCompatActivity
         updatedTextView = findViewById(R.id.updated_field);
         detailsTextView = findViewById(R.id.details_field);
         currentTemperatureTextView = findViewById(R.id.current_temperature_field);
-        weatherIconTextView = findViewById(R.id.weather_icon);
+        imageViewWeather = findViewById(R.id.imageViewWeather);
     }
 
     private void initSensors() {
@@ -300,24 +293,15 @@ public class MainActivity extends AppCompatActivity
         final EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_CLASS_TEXT);
         builder.setView(input);
-        builder.setPositiveButton("OK", (dialog, which) -> new Thread(() -> {
-            weatherDataParser = new WeatherDataParser(getApplicationContext(), WeatherDataLoader.getJSONData(input.getText().toString()));
-            if (weatherDataParser.updateWeatherData()){
-                handler.post(() -> {
-                    updateWeatherViews();
-                    //диалог сохранения значения по умолчанию показывается только один раз
-                    //в течение жизненного цикла Активити при вводе корректного города отличного от дефолтного,
-                    //и по которому срабатывает GET-запрос
-                if (showSaveDefaultCityDialog && !sharedPreferences.getString(MainActivityKeys.KEY1.getDescription(), " ").equals(input.getText().toString())) {
-                        showSaveDefaultCityDialog = false;
-                        showSaveDefaultCityDialog(input.getText().toString());
-                    }
-                });
-            } else {
-                handler.post(() -> Toast.makeText(MainActivity.this, "Для указанного города не нашлось информации: "
-                                + input.getText().toString(), Toast.LENGTH_SHORT).show());
+        builder.setPositiveButton("OK", (dialog, which) -> {
+            weatherDataParser = WeatherDataParser.getInstance();
+            weatherDataParser.setActivity(this);
+            weatherDataParser.loadWeather(input.getText().toString());
+            if (showSaveDefaultCityDialog && !sharedPreferences.getString(MainActivityKeys.KEY1.getDescription(), " ").equals(input.getText().toString())) {
+                showSaveDefaultCityDialog = false;
+                showSaveDefaultCityDialog(input.getText().toString());
             }
-        }).start());
+        });
         builder.show();
     }
 
@@ -341,7 +325,7 @@ public class MainActivity extends AppCompatActivity
         editor.apply();
     }
 
-    private void updateWeatherViews() {
+    public void updateWeatherViews() {
         cityTextView.setText(weatherDataParser.getPlaceName());
         updatedTextView.setText(weatherDataParser.getUpdatedText());
         detailsText = weatherDataParser.getDetails();
@@ -349,7 +333,15 @@ public class MainActivity extends AppCompatActivity
             detailsTextView.setText(detailsText);
         }
         currentTemperatureTextView.setText(weatherDataParser.getCurrentTemp());
-        weatherIconTextView.setText(weatherDataParser.getIcon());
+        weatherImageURI = weatherDataParser.getIcon();
+        loadImage(weatherImageURI);
+    }
+
+    private void loadImage(String imageURI) {
+        Picasso.get()
+                .load(imageURI)
+                .transform(new CircularTransformation(600))
+                .into(imageViewWeather);
     }
 
     private void sortItemSumDec() {
