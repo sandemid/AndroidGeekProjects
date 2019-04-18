@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private boolean showSaveDefaultCityDialog = true;
+    private final String DEFAULT_CITY = "Moscow";
     private boolean serviceRun = false;
     private static int currentOrientation = 0;
     private static Fragments currentFragment = new Fragments();
@@ -127,11 +128,12 @@ public class MainActivity extends AppCompatActivity
 
     private void loadDefaultCityWeather() {
         String city = sharedPreferences.getString(MainActivityKeys.KEY1.getDescription(), null);
-        if (city != null) {
-            weatherDataParser = WeatherDataParser.getInstance();
-            weatherDataParser.setActivity(this);
-            weatherDataParser.loadWeather(city);
+        if (city == null) {
+            city = DEFAULT_CITY;
         }
+        weatherDataParser = WeatherDataParser.getInstance();
+        weatherDataParser.setActivity(this);
+        weatherDataParser.loadWeather(city);
     }
 
     private void startBroadcastReceiver() {
