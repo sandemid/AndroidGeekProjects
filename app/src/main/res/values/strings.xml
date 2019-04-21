@@ -47,4 +47,6 @@
     <string name="menu_change_city">Выбрать город</string>
     <string name="change_city_default">Сохранить указанный город по умолчанию?</string>
     <string name="textviewPress">Нажимай на кружок, читай датчики</string>
+    <string name="nav_weather_history">История погоды</string>
+    <string name="textView_weather_history">Выберите город из списка для просмотра истории</string>
 </resources>

@@ -6,12 +6,12 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.database.sqlite.SQLiteDatabase;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
@@ -25,15 +25,16 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.androidgeekproject.database.DatabaseHelper;
 import com.example.androidgeekproject.fragments.Fragments;
 import com.example.androidgeekproject.fragments.NavAboutFragment;
 import com.example.androidgeekproject.fragments.NavContactFragment;
 import com.example.androidgeekproject.fragments.NavMyProfileFragment;
 import com.example.androidgeekproject.fragments.NavURLFragment;
+import com.example.androidgeekproject.fragments.NavWeatherHistoryFragment;
 import com.example.androidgeekproject.transform.CircularTransformation;
 import com.squareup.picasso.Picasso;
 
@@ -45,6 +46,7 @@ public class MainActivity extends AppCompatActivity
     private boolean serviceRun = false;
     private static int currentOrientation = 0;
     private static Fragments currentFragment = new Fragments();
+    private SQLiteDatabase database;
     private WeatherDataParser weatherDataParser;
     private TextView cityTextView;
     private TextView updatedTextView;
@@ -87,6 +89,7 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         sharedPreferences = getPreferences(Context.MODE_PRIVATE);
+        initDB();
         initActionBar();
         initViews();
         initNavView();
@@ -96,6 +99,10 @@ public class MainActivity extends AppCompatActivity
             loadDefaultCityWeather();
         }
         startBroadcastReceiver();
+    }
+
+    private void initDB() {
+        database = new DatabaseHelper(getApplicationContext()).getWritableDatabase();
     }
 
     @Override
@@ -206,35 +213,12 @@ public class MainActivity extends AppCompatActivity
     private void initActionBar() {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        initFabWithPopup();
-
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
     }
-
-    private void initFabWithPopup() {
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(view -> {
-            PopupMenu popup = new PopupMenu(MainActivity.this, view);
-            getMenuInflater().inflate(R.menu.popup_menu, popup.getMenu());
-            popup.setOnMenuItemClickListener((item) -> {
-                if(item.getItemId() == R.id.menu_popup_add_1) {
-                    Toast.makeText(getApplicationContext(), "Добавить элемент 1 типа",
-                            Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(getApplicationContext(), "Добавить элемент 2 типа",
-                            Toast.LENGTH_SHORT).show();
-                }
-                return true;
-            });
-            popup.show();
-        });
-    }
-
 
     @Override
     public void onBackPressed() {
@@ -403,6 +387,10 @@ public class MainActivity extends AppCompatActivity
             NavURLFragment navURLFragment = new NavURLFragment();
             transaction.replace(R.id.fragmentContainer, navURLFragment);
             currentFragment = navURLFragment;
+        } else if (id == R.id.nav_weather_history){
+            NavWeatherHistoryFragment navWeatherHistoryFragment = new NavWeatherHistoryFragment();
+            transaction.replace(R.id.fragmentContainer, navWeatherHistoryFragment);
+            currentFragment = navWeatherHistoryFragment;
         } else if (id == R.id.nav_main) {
             transaction.remove(currentFragment);
         } else if (id == R.id.nav_share) {
@@ -414,4 +402,9 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
-    }}
+    }
+
+    public SQLiteDatabase getDatabase() {
+        return database;
+    }
+}
