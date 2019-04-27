@@ -3,6 +3,7 @@ package com.example.androidgeekproject;
 import android.support.annotation.NonNull;
 import android.widget.Toast;
 
+import com.example.androidgeekproject.database.DBTables;
 import com.example.androidgeekproject.rest.OpenWeatherRepo;
 import com.example.androidgeekproject.rest.entites.WeatherRequestRestModel;
 
@@ -23,6 +24,7 @@ class WeatherDataParser {
     private String icon;
     private String updatedText;
     private String details;
+    private String detailsString;
     private WeatherRequestRestModel model;
     private MainActivity activity;
 
@@ -53,6 +55,7 @@ class WeatherDataParser {
                             model = response.body();
                             renderWeather();
                             activity.updateWeatherViews();
+                            recordWeatherInDB();
                         } else {
                             Toast.makeText(activity.getApplicationContext(), "Для указанного города не нашлось информации: "
                                     + city, Toast.LENGTH_SHORT).show();
@@ -65,6 +68,11 @@ class WeatherDataParser {
                                 + city, Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    private void recordWeatherInDB() {
+        DateFormat dateFormat = DateFormat.getDateTimeInstance();
+        DBTables.addWeather(placeName, currentTemp, dateFormat.format(new Date(System.currentTimeMillis())), detailsString, activity.getDatabase());
     }
 
     private void renderWeather() {
@@ -132,6 +140,9 @@ class WeatherDataParser {
     }
 
     private void setDetails() {
+        this.detailsString = model.weather[0].description.toUpperCase()
+                + ", Humidity: " + model.main.humidity + "%"
+                + ", Pressure: " + model.main.pressure + "hPa";
         this.details = model.weather[0].description.toUpperCase() + "\n"
                 + "Humidity: " + model.main.humidity + "%" + "\n"
                 + "Pressure: " + model.main.pressure + "hPa";
