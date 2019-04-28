@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity
     private String detailsText;
     private String weatherImageURI;
     private SharedPreferences sharedPreferences;
-    private BroadcastReceiver broadcastReceiver;
+    private BroadcastReceiver broadcastReceiverSerivice, broadcastReceiverTime;
     private SensorManager sensorManager;
     private Sensor sensorTemperature;
     private Sensor sensorHumidity;
@@ -98,7 +98,7 @@ public class MainActivity extends AppCompatActivity
         if (savedInstanceState == null) {
             loadDefaultCityWeather();
         }
-        startBroadcastReceiver();
+        startBroadcastReceiverService();
     }
 
     private void initDB() {
@@ -143,8 +143,8 @@ public class MainActivity extends AppCompatActivity
         weatherDataParser.loadWeather(city);
     }
 
-    private void startBroadcastReceiver() {
-        broadcastReceiver = new BroadcastReceiver() {
+    private void startBroadcastReceiverService() {
+        broadcastReceiverSerivice = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 if (!serviceRun) {
@@ -162,7 +162,7 @@ public class MainActivity extends AppCompatActivity
         };
 
         IntentFilter filter = new IntentFilter(NavAboutFragment.BROADCAST_ACTION);
-        this.registerReceiver(broadcastReceiver, filter);
+        this.registerReceiver(broadcastReceiverSerivice, filter);
     }
 
     private void initViews() {
@@ -202,7 +202,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        this.unregisterReceiver(this.broadcastReceiver);
+        this.unregisterReceiver(this.broadcastReceiverSerivice);
     }
 
     private void initNavView() {

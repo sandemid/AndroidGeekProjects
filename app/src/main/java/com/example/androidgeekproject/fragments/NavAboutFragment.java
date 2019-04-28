@@ -1,6 +1,9 @@
 package com.example.androidgeekproject.fragments;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -13,11 +16,19 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.example.androidgeekproject.BackgroundService;
+import com.example.androidgeekproject.MainActivity;
 import com.example.androidgeekproject.R;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.DateTimeException;
+import java.util.Date;
+import java.util.Locale;
 
 public class NavAboutFragment extends Fragments {
 
@@ -25,8 +36,10 @@ public class NavAboutFragment extends Fragments {
     Button startServiceBtn;
     Button startAsyncBtn;
     TextView resultText;
+    TextView timeText;
     ProgressBar progressBar;
     Handler handler;
+    BroadcastReceiver broadcastReceiverTime;
     boolean isFragmentAlreadyLoaded = false;
     public static final String BROADCAST_ACTION = "com.example.androidgeekproject.fragments.NavAboutFragment";
     public static final String KEY_FROM_FRAGMENT = "SERVICE_START";
@@ -40,6 +53,7 @@ public class NavAboutFragment extends Fragments {
             handler = new Handler();
             initViews(layout);
             setOnClickListeners();
+            startBroadcastReceiverTime();
             isFragmentAlreadyLoaded = true;
         }
         return layout;
@@ -100,5 +114,32 @@ public class NavAboutFragment extends Fragments {
         startServiceBtn = layout.findViewById(R.id.button_start_service);
         progressBar = layout.findViewById(R.id.progressBar);
         resultText = layout.findViewById(R.id.textView_result);
+        timeText = layout.findViewById(R.id.textView_time);
+        setTimeText();
+    }
+
+    private void setTimeText() {
+        DateFormat simpleDateFormat =  SimpleDateFormat.getTimeInstance(SimpleDateFormat.SHORT);
+        String date = simpleDateFormat.format(new Date(System.currentTimeMillis()));
+        date = "Текущее время: " + date;
+        timeText.setText(date);
+    }
+
+    private void startBroadcastReceiverTime() {
+        broadcastReceiverTime = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                setTimeText();
+            }
+        };
+
+        IntentFilter filter = new IntentFilter(Intent.ACTION_TIME_TICK);
+        getActivity().getApplicationContext().registerReceiver(broadcastReceiverTime, filter);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        getActivity().getApplicationContext().unregisterReceiver(this.broadcastReceiverTime);
     }
 }
