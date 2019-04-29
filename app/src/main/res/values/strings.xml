@@ -49,4 +49,5 @@
     <string name="textviewPress">Нажимай на кружок, читай датчики</string>
     <string name="nav_weather_history">История погоды</string>
     <string name="textView_weather_history">Выберите город из списка для просмотра истории</string>
+    <string name="menu_weather_geo">Погода по геолокации</string>
 </resources>
