@@ -16,19 +16,15 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.example.androidgeekproject.BackgroundService;
-import com.example.androidgeekproject.MainActivity;
 import com.example.androidgeekproject.R;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.DateTimeException;
 import java.util.Date;
-import java.util.Locale;
+import java.util.Objects;
 
 public class NavAboutFragment extends Fragments {
 
@@ -74,7 +70,7 @@ public class NavAboutFragment extends Fragments {
         startServiceBtn.setOnClickListener(v -> {
             Intent intent = new Intent(BROADCAST_ACTION);
             intent.putExtra(KEY_FROM_FRAGMENT, "SERVICE_START");
-            getActivity().getApplicationContext().sendBroadcast(intent);
+            Objects.requireNonNull(getActivity()).sendBroadcast(intent);
         });
     }
 
@@ -85,8 +81,8 @@ public class NavAboutFragment extends Fragments {
             double r = 1;
             for (int j = 0; j < 100000; j++) {
                 r = r*0.01+Math.floor(Math.random()*j);
-                double value = j * 100 / 100000;
-                Integer intValue = Integer.valueOf((int)value);
+                double value = (double) j * 100 / 100000;
+                Integer intValue = (int) value;
                 publishProgress(intValue);
             }
             return r;
@@ -102,7 +98,7 @@ public class NavAboutFragment extends Fragments {
         protected void onPostExecute(final Double aDouble) {
             super.onPostExecute(aDouble);
             handler.post(() -> {
-                final double value = aDouble.doubleValue();
+                final double value = aDouble;
                 resultText.setText(new StringBuilder().append("Результат = ")
                         .append(new BigDecimal(value).setScale(2, RoundingMode.DOWN).toString()));
             });
@@ -134,12 +130,12 @@ public class NavAboutFragment extends Fragments {
         };
 
         IntentFilter filter = new IntentFilter(Intent.ACTION_TIME_TICK);
-        getActivity().getApplicationContext().registerReceiver(broadcastReceiverTime, filter);
+        Objects.requireNonNull(getActivity()).registerReceiver(broadcastReceiverTime, filter);
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        getActivity().getApplicationContext().unregisterReceiver(this.broadcastReceiverTime);
+        Objects.requireNonNull(getActivity()).unregisterReceiver(this.broadcastReceiverTime);
     }
 }

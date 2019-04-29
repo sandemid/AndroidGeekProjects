@@ -72,7 +72,7 @@ public class NavWeatherHistoryFragment extends Fragments {
 
     private void initSpinner() {
         spinner = layout.findViewById(R.id.spinner);
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity().getApplicationContext(), R.layout.spinner_item, recordsSpinner);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(Objects.requireNonNull(getActivity()), R.layout.spinner_item, recordsSpinner);
         adapter.setDropDownViewResource(R.layout.spinner_item);
         spinner.setAdapter(adapter);
     }
