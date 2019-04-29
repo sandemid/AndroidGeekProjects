@@ -1,18 +1,26 @@
 package com.example.androidgeekproject;
 
+import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.database.sqlite.SQLiteDatabase;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -41,6 +49,11 @@ import com.squareup.picasso.Picasso;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    private static final int PERMISSION_REQUEST_CODE = 10;
+    private LocationManager locationManager;
+    private String provider;
+    private String latitude;
+    private String longitude;
     private boolean showSaveDefaultCityDialog = true;
     private final String DEFAULT_CITY = "Moscow";
     private boolean serviceRun = false;
@@ -56,7 +69,7 @@ public class MainActivity extends AppCompatActivity
     private String detailsText;
     private String weatherImageURI;
     private SharedPreferences sharedPreferences;
-    private BroadcastReceiver broadcastReceiver;
+    private BroadcastReceiver broadcastReceiverService;
     private SensorManager sensorManager;
     private Sensor sensorTemperature;
     private Sensor sensorHumidity;
@@ -94,11 +107,25 @@ public class MainActivity extends AppCompatActivity
         initViews();
         initNavView();
         initSensors();
+        initGeo();
         currentOrientation = getResources().getConfiguration().orientation;
         if (savedInstanceState == null) {
             loadDefaultCityWeather();
         }
-        startBroadcastReceiver();
+        startBroadcastReceiverService();
+    }
+
+    private void initGeo() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED
+                || ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            // Запросим координаты
+            requestLocation();
+        } else {
+            // Пермиссии нет, будем запрашивать у пользователя
+            requestLocationPermissions();
+        }
     }
 
     private void initDB() {
@@ -133,18 +160,88 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    private void requestLocation() {
+        // Если пермиссии все-таки нет - просто выйдем, приложение не имеет смысла
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(getApplicationContext(), "Missing geo permission!",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        Criteria criteria = new Criteria();
+        criteria.setAccuracy(Criteria.ACCURACY_COARSE);
+        provider = locationManager.getBestProvider(criteria, true);
+        if (provider != null) {
+            // Будем получать геоположение через каждые 10 секунд или каждые 10 метров
+            locationManager.requestLocationUpdates(provider, 10000, 10, new LocationListener() {
+                @Override
+                public void onLocationChanged(Location location) {
+                    // Широта
+                    latitude = Double.toString(location.getLatitude());
+
+                    // Долгота
+                    longitude = Double.toString(location.getLongitude());
+
+                }
+                @Override
+                public void onStatusChanged(String provider, int status, Bundle extras) {}
+                @Override
+                public void onProviderEnabled(String provider) {}
+                @Override
+                public void onProviderDisabled(String provider) {}
+            });
+        }
+    }
+
+    // Запрос пермиссии для геолокации
+    private void requestLocationPermissions() {
+        ActivityCompat.requestPermissions(this,
+                new String[]{
+                        Manifest.permission.ACCESS_COARSE_LOCATION,
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                },
+                PERMISSION_REQUEST_CODE);
+    }
+
+
+    // Это результат запроса у пользователя пермиссии
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        // Это та самая пермиссия, что мы запрашивали?
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            if (grantResults.length == 2 &&
+                    (grantResults[0] == PackageManager.PERMISSION_GRANTED || grantResults[1] == PackageManager.PERMISSION_GRANTED)) {
+                // Пермиссия дана
+                requestLocation();
+            }
+        }
+    }
+
     private void loadDefaultCityWeather() {
         String city = sharedPreferences.getString(MainActivityKeys.KEY1.getDescription(), null);
         if (city == null) {
             city = DEFAULT_CITY;
         }
+        queryWeather(city);
+    }
+
+    private void queryWeather(String city) {
         weatherDataParser = WeatherDataParser.getInstance();
         weatherDataParser.setActivity(this);
         weatherDataParser.loadWeather(city);
     }
 
-    private void startBroadcastReceiver() {
-        broadcastReceiver = new BroadcastReceiver() {
+    private void queryWeather() {
+        weatherDataParser = WeatherDataParser.getInstance();
+        weatherDataParser.setActivity(this);
+        weatherDataParser.loadWeather(latitude, longitude);
+    }
+
+    private void startBroadcastReceiverService() {
+        broadcastReceiverService = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 if (!serviceRun) {
@@ -162,7 +259,7 @@ public class MainActivity extends AppCompatActivity
         };
 
         IntentFilter filter = new IntentFilter(NavAboutFragment.BROADCAST_ACTION);
-        this.registerReceiver(broadcastReceiver, filter);
+        this.registerReceiver(broadcastReceiverService, filter);
     }
 
     private void initViews() {
@@ -202,7 +299,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        this.unregisterReceiver(this.broadcastReceiver);
+        this.unregisterReceiver(this.broadcastReceiverService);
     }
 
     private void initNavView() {
@@ -267,6 +364,13 @@ public class MainActivity extends AppCompatActivity
                 return true;
             case R.id.menu_change_city:
                 showInputDialog();
+            case R.id.menu_weather_from_geo:
+                if (latitude != null && longitude != null) {
+                    queryWeather();
+                } else {
+                    Toast.makeText(MainActivity.this, "Некорректные координаты!",
+                            Toast.LENGTH_SHORT).show();
+                }
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -280,9 +384,7 @@ public class MainActivity extends AppCompatActivity
         input.setInputType(InputType.TYPE_CLASS_TEXT);
         builder.setView(input);
         builder.setPositiveButton("OK", (dialog, which) -> {
-            weatherDataParser = WeatherDataParser.getInstance();
-            weatherDataParser.setActivity(this);
-            weatherDataParser.loadWeather(input.getText().toString());
+            queryWeather(input.getText().toString());
             if (showSaveDefaultCityDialog && !sharedPreferences.getString(MainActivityKeys.KEY1.getDescription(), " ").equals(input.getText().toString())) {
                 showSaveDefaultCityDialog = false;
                 showSaveDefaultCityDialog(input.getText().toString());

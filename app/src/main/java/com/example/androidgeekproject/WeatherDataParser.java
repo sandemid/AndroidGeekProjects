@@ -5,6 +5,7 @@ import android.widget.Toast;
 
 import com.example.androidgeekproject.database.DBTables;
 import com.example.androidgeekproject.rest.OpenWeatherRepo;
+import com.example.androidgeekproject.rest.OpenWeatherRepoCoordinates;
 import com.example.androidgeekproject.rest.entites.WeatherRequestRestModel;
 
 import java.text.DateFormat;
@@ -66,6 +67,33 @@ class WeatherDataParser {
                     public void onFailure(Call<WeatherRequestRestModel> call, Throwable t) {
                         Toast.makeText(activity.getApplicationContext(), "Для указанного города не нашлось информации: "
                                 + city, Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    void loadWeather(String latitude, String longitude) {
+
+        OpenWeatherRepoCoordinates.getSingleton().getAPI().loadWeather(latitude, longitude,
+                OPEN_WEATHER_API_KEY, "metric")
+                .enqueue(new Callback<WeatherRequestRestModel>() {
+                    @Override
+                    public void onResponse(@NonNull Call<WeatherRequestRestModel> call,
+                                           @NonNull Response<WeatherRequestRestModel> response) {
+                        if (response.body() != null && response.isSuccessful()) {
+                            model = response.body();
+                            renderWeather();
+                            activity.updateWeatherViews();
+                            recordWeatherInDB();
+                        } else {
+                            Toast.makeText(activity.getApplicationContext(), "Для указанных координат не нашлось информации"
+                                    , Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<WeatherRequestRestModel> call, Throwable t) {
+                        Toast.makeText(activity.getApplicationContext(), "Для указанных координат не нашлось информации: " + latitude
+                                + " " + longitude, Toast.LENGTH_SHORT).show();
                     }
                 });
     }

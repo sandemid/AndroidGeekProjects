@@ -57,6 +57,11 @@
         android:title="@string/menu_change"
         app:showAsAction="never" />
     <item
+        android:id="@+id/menu_weather_from_geo"
+        android:orderInCategory="15"
+        android:title="@string/menu_weather_geo"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/menu_change_city"
         android:orderInCategory="10"
         android:title="@string/menu_change_city"
